@@ -1,11 +1,9 @@
 package com.kubukoz
 
-import cats.effect.IO
 import cats.effect.kernel.Async
 import cats.effect.kernel.Resource
 import cats.effect.kernel.Sync
 import cats.effect.std.Dispatcher
-import cats.effect.unsafe.IORuntime
 import cats.implicits._
 import cats.~>
 import reactor.core.publisher.Mono
@@ -30,6 +28,7 @@ object MonoInterop {
     }
 
   def fFromMono[F[_]: Async]: Mono ~> F = new (Mono ~> F) {
+
     def apply[A](fa: Mono[A]): F[A] = Async[F].async { cb =>
       val cancel = fa
         .doOnSuccess(a => cb(Right(a)))
@@ -38,5 +37,7 @@ object MonoInterop {
 
       Sync[F].delay(cancel.dispose()).some.pure[F]
     }
+
   }
+
 }
