@@ -31,9 +31,10 @@ object MonoInterop {
 
     def apply[A](fa: Mono[A]): F[A] = Async[F].async { cb =>
       val cancel = fa
-        .doOnSuccess(a => cb(Right(a)))
-        .doOnError(e => cb(Left(e)))
-        .subscribe()
+        .subscribe(
+          a => cb(Right(a)),
+          e => cb(Left(e))
+        )
 
       Sync[F].delay(cancel.dispose()).some.pure[F]
     }
